@@ -4,7 +4,7 @@ include $(THEOS)/makefiles/common.mk
 
 TWEAK_NAME = GramifyReskin
 GramifyReskin_FILES = Tweak.xm
-GramifyReskin_CFLAGS = -fobjc-arc
+GramifyReskin_CFLAGS = -fobjc-arc -fno-objc-arc-exceptions
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 
