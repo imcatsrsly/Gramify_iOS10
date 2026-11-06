@@ -26,6 +26,7 @@ jobs:
           unzip -q sdks.zip
           mkdir -p $THEOS/sdks
           cp -R sdks-master/iPhoneOS10.3.sdk $THEOS/sdks/
+          find $THEOS/sdks/iPhoneOS10.3.sdk -name "module.map" -exec sh -c 'mv "$1" "$(dirname "$1")/module.modulemap"' _ {} \;
 
       - name: Build package
         run: |
