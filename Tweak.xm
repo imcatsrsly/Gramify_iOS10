@@ -23,13 +23,27 @@
 @interface SHMainTabController : UITabBarController
 @end
 
+static void restyleButton(UIButton *button) {
+    button.backgroundColor = [UIColor clearColor];
+    button.layer.borderWidth = 0;
+    UIImage *img = [button imageForState:UIControlStateNormal];
+    if (img) {
+        [button setImage:[img imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate] forState:UIControlStateNormal];
+    }
+    button.tintColor = [UIColor blackColor];
+}
+
 %hook SHFeedCell
 
 - (void)layoutSubviews {
     %orig;
 
     self.backgroundColor = [UIColor whiteColor];
-    self.headerView.hidden = YES;
+
+    // headerView оказался контейнером для аватарки/юзернейма, а не просто текстурой —
+    // не прячем его целиком, а просто убираем тёмный фон/текстуру
+    self.headerView.image = nil;
+    self.headerView.backgroundColor = [UIColor whiteColor];
 
     self.avatarView.layer.cornerRadius = self.avatarView.bounds.size.width / 2.0;
     self.avatarView.clipsToBounds = YES;
@@ -40,10 +54,10 @@
     self.clockView.hidden = YES;
     self.timeLabel.hidden = YES;
 
-    self.likeButton.tintColor = [UIColor blackColor];
-    self.commentButton.tintColor = [UIColor blackColor];
-    self.shareButton.tintColor = [UIColor blackColor];
-    self.saveButton.tintColor = [UIColor blackColor];
+    restyleButton(self.likeButton);
+    restyleButton(self.commentButton);
+    restyleButton(self.shareButton);
+    restyleButton(self.saveButton);
 
     self.likesHeart.tintColor = [UIColor blackColor];
     self.likesLabel.font = [UIFont boldSystemFontOfSize:14];
@@ -57,28 +71,6 @@
 
 %end
 
-%hook SHFeedViewController
-
-- (void)viewDidLoad {
-    %orig;
-
-    self.tableView.backgroundColor = [UIColor whiteColor];
-    self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-
-    self.navigationController.navigationBar.barTintColor = [UIColor whiteColor];
-    self.navigationController.navigationBar.tintColor = [UIColor blackColor];
-    self.navigationController.navigationBar.translucent = NO;
-
-    UILabel *titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 160, 40)];
-    titleLabel.text = @"Instagram";
-    titleLabel.textAlignment = NSTextAlignmentCenter;
-    titleLabel.font = [UIFont fontWithName:@"Snell Roundhand" size:30] ?: [UIFont italicSystemFontOfSize:26];
-    titleLabel.textColor = [UIColor blackColor];
-    self.navigationItem.titleView = titleLabel;
-}
-
-%end
-
 %hook SHMainTabController
 
 - (void)viewDidLoad {
@@ -86,6 +78,30 @@
     self.tabBar.barTintColor = [UIColor whiteColor];
     self.tabBar.tintColor = [UIColor blackColor];
     self.tabBar.translucent = NO;
+}
+
+%end
+
+// --- Диагностика: распечатываем реальную иерархию вью в файл,
+// чтобы найти настоящий класс тёмной верхней панели ---
+
+static void dumpViews(UIView *view, NSMutableString *out, NSInteger depth) {
+    NSString *indent = [@"" stringByPaddingToLength:depth*2 withString:@" " startingAtIndex:0];
+    [out appendFormat:@"%@%@  frame=%@\n", indent, NSStringFromClass([view class]), NSStringFromCGRect(view.frame)];
+    for (UIView *sub in view.subviews) {
+        dumpViews(sub, out, depth+1);
+    }
+}
+
+%hook SHFeedViewController
+
+- (void)viewDidAppear:(BOOL)animated {
+    %orig;
+    NSMutableString *out = [NSMutableString string];
+    UIWindow *window = [UIApplication sharedApplication].keyWindow;
+    dumpViews(window, out, 0);
+    NSString *path = [NSHomeDirectory() stringByAppendingPathComponent:@"Documents/gramify_dump.txt"];
+    [out writeToFile:path atomically:YES encoding:NSUTF8StringEncoding error:nil];
 }
 
 %end
