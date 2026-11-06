@@ -14,7 +14,7 @@ jobs:
       - name: Install dependencies
         run: brew install ldid xz
 
-      - name: Install Theos
+      - name: Install Theos 
         run: |
           export THEOS=$HOME/theos
           echo "THEOS=$THEOS" >> $GITHUB_ENV
