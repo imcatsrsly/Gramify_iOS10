@@ -1,0 +1,9 @@
+Package: com.imcatsrsly.gramifyreskin
+Name: Gramify iOS10 Reskin
+Version: 0.1
+Architecture: iphoneos-arm
+Description: Reskins Gramify (Shutter) into an iOS 10-era Instagram look
+Maintainer: imcatsrsly
+Author: imcatsrsly
+Section: Tweaks
+Depends: mobilesubstrate, firmware (>= 10.0)
