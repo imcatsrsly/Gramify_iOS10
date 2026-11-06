@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main ]
   workflow_dispatch:
- 
+
 jobs:
   build:
     runs-on: macos-15
@@ -16,19 +16,19 @@ jobs:
       - name: Install dependencies
         run: brew install ldid xz
 
-      - name: Install Theos 
+      - name: Prepare armv7 SDK
+        run: |
+          mkdir -p $HOME/theos/sdks
+          curl -L -o sdks.zip https://github.com/theos/sdks/archive/refs/heads/master.zip
+          unzip -q sdks.zip
+          cp -R sdks-master/iPhoneOS10.3.sdk $HOME/theos/sdks/
+          find $HOME/theos/sdks/iPhoneOS10.3.sdk -name "module.map" -exec sh -c 'mv "$1" "$(dirname "$1")/module.modulemap"' _ {} \;
+
+      - name: Install Theos
         run: |
           export THEOS=$HOME/theos
           echo "THEOS=$THEOS" >> $GITHUB_ENV
           bash -c "$(curl -fsSL https://raw.githubusercontent.com/theos/theos/master/bin/install-theos)"
-
-      - name: Get armv7 SDK
-        run: |
-          curl -L -o sdks.zip https://github.com/theos/sdks/archive/refs/heads/master.zip
-          unzip -q sdks.zip
-          mkdir -p $THEOS/sdks
-          cp -R sdks-master/iPhoneOS10.3.sdk $THEOS/sdks/
-          find $THEOS/sdks/iPhoneOS10.3.sdk -name "module.map" -exec sh -c 'mv "$1" "$(dirname "$1")/module.modulemap"' _ {} \;
 
       - name: Build package
         run: |
@@ -42,9 +42,4 @@ jobs:
           path: packages/*.deb
 
       - name: Create release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: build-${{ github.run_number }}
-          files: packages/*.deb
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses:
