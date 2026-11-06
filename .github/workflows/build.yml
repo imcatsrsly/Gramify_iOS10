@@ -25,7 +25,7 @@ jobs:
           curl -L -o sdks.zip https://github.com/theos/sdks/archive/refs/heads/master.zip
           unzip -q sdks.zip
           mkdir -p $THEOS/sdks
-          cp -R sdks-master/iPhoneOS10.2.sdk $THEOS/sdks/
+          cp -R sdks-master/iPhoneOS10.3.sdk $THEOS/sdks/
 
       - name: Build package
         run: |
